@@ -79,33 +79,6 @@ namespace WpfApp.Model.TileGenerator {
             }
         }
 
-        private long getNumberOfShuffels() {
-            long cells = rows * cols;
-            long cellsFactorial = 1;
-
-            while (cells > 0) {
-                cellsFactorial *= cells--;
-            }
-
-            cellsFactorial /= 2;
-
-            if (cellsFactorial > 500000) {
-                switch (level) {
-                    case Level.Easy: return 10000;
-                    case Level.Medium: return 100000;
-                    case Level.Hard: return 500000;
-                    default: return 10000;
-                }
-            }
-
-            switch (level) {
-                case Level.Easy: return cellsFactorial * 1 / 3;
-                case Level.Medium: return cellsFactorial * 2 / 3;
-                case Level.Hard: return cellsFactorial * 3 / 3;
-                default: return cellsFactorial;
-            }
-        }
-
         private void swapTiles(Point p1, Point p2) {
             int i1 = (int)p1.X, i2 = (int)p2.X;
             int j1 = (int)p1.Y, j2 = (int)p2.Y;

@@ -16,11 +16,12 @@ namespace WpfApp.Model {
         #region Member
         private bool goalCalaulated;
         private string goalString;
+        private Random r = new Random();
         #endregion
 
         #region Solve Functions
         internal void solve() {
-            ISearcher searcher = new BestFirstSearch();
+            ISearcher searcher = new AStarSearch();
             Solution solution = searcher.search(this);
             solveBySolution(solution);
             this.tracker.updateSolved();
@@ -36,7 +37,8 @@ namespace WpfApp.Model {
                         sb.Append(";");
                 }
             }
-            return new State<dynamic>(sb.ToString(), Direction.NO_DIRECTION);
+            string s = sb.ToString();
+            return new State<dynamic>(s, Direction.NO_DIRECTION, calcHeuristic(s), 0);
         }
 
         public bool isGoalState(State<dynamic> state) {
@@ -54,35 +56,39 @@ namespace WpfApp.Model {
             string[] stringArr = stateString.Split(';');
             int stateStringLength = stringArr.Length;
             int spaceIndex = Array.FindIndex(stringArr, s => s.Equals(" "));
+            float newStatecost = state.Cost + 1;
 
             /* RIGHT MOVE */
             if (spaceIndex + 1 < stateStringLength && (spaceIndex + 1 + col) % col != 0) {
                 string rightMove = swapIndexesInString(stringArr, spaceIndex, spaceIndex + 1);
-                list.Add(new State<dynamic>(rightMove, Direction.RIGHT));
+                list.Add(new State<dynamic>(rightMove, Direction.RIGHT,
+                    calcHeuristic(rightMove), newStatecost));
             }
             /* LEFT MOVE */
             if ((spaceIndex - 1 == 0) || (spaceIndex - 1 >= 0 && (spaceIndex + col) % col != 0)) {
                 string leftMove = swapIndexesInString(stringArr, spaceIndex, spaceIndex - 1);
-                list.Add(new State<dynamic>(leftMove, Direction.LEFT));
+                list.Add(new State<dynamic>(leftMove, Direction.LEFT,
+                    calcHeuristic(leftMove), newStatecost));
             }
             /* UP MOVE */
             if (spaceIndex - col >= 0) {
                 string upMove = swapIndexesInString(stringArr, spaceIndex, spaceIndex - col);
-                list.Add(new State<dynamic>(upMove, Direction.UP));
+                list.Add(new State<dynamic>(upMove, Direction.UP,
+                    calcHeuristic(upMove), newStatecost));
             }
             /* DOWN MOVE */
             if (spaceIndex + col < stateStringLength) {
                 string downMove = swapIndexesInString(stringArr, spaceIndex, spaceIndex + col);
-                list.Add(new State<dynamic>(downMove, Direction.DOWN));
+                list.Add(new State<dynamic>(downMove, Direction.DOWN,
+                    calcHeuristic(downMove), newStatecost));
             }
-            Random r = new Random();
-           
-            list.Sort( (x, y) => r.Next());
+
+            list.Sort((x, y) => r.Next());
             return list;
         }
 
         #region Helpers
-        private string createGoalTile() {            
+        private string createGoalTile() {
             StringBuilder sb = new StringBuilder();
             int count = 1;
 
@@ -105,7 +111,7 @@ namespace WpfApp.Model {
 
             foreach (State<dynamic> state in list) {
                 applyState(state);
-                Thread.Sleep(500);
+                Thread.Sleep(250); // as a delay between swaps
             }
         }
 
@@ -116,10 +122,12 @@ namespace WpfApp.Model {
             Tile tileSpace = arr[i, j], otherTile;
 
             switch (move) {
-                case Direction.UP: otherTile = arr[i - 1, j];
+                case Direction.UP:
+                    otherTile = arr[i - 1, j];
                     swap(otherTile, spacePoint, tileSpace, new Point(i - 1, j));
                     break;
-                case Direction.RIGHT: otherTile = arr[i, j + 1];
+                case Direction.RIGHT:
+                    otherTile = arr[i, j + 1];
                     swap(otherTile, spacePoint, tileSpace, new Point(i, j + 1));
                     break;
                 case Direction.DOWN:
@@ -153,6 +161,36 @@ namespace WpfApp.Model {
             return sb.ToString();
         }
 
+        private float calcHeuristic(string stateString) {
+            float sum = 0;
+            string[] stringArr = stateString.Split(';');
+            int index = 0;
+
+            for (int i = 0; i < row; ++i) {
+                for (int j = 0; j < col; j++) {
+
+                    int correctX, correctY;
+                    string stringValue = stringArr[index++];
+
+                    if (!stringValue.Equals(" ")) {
+                        int integerValue = int.Parse(stringValue);
+
+                        correctX = (integerValue - 1) / col;
+                        correctY = (integerValue - 1) % col;
+                    } else {
+                        correctX = row - 1;
+                        correctY = col - 1;
+                    }
+
+                    sum += calcDifference(i, j, correctX, correctY);
+                }
+            }
+            return sum;
+        }
+
+        private float calcDifference(int i, int j, int correctX, int correctY) {
+            return Math.Abs(i - correctX) + Math.Abs(j - correctY);
+        }
         #endregion
 
         #endregion

@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using WpfApp.Model.Solver.Misc;
 using WpfApp.Model.Solver.Searchable;
 using WpfApp.Model.Solver.Searchers;
 
 namespace WpfApp.Model.Solver.SearchAlgorithm {
-    class BestFirstSearch : Searcher<dynamic> {
+    class AStarSearch : Searcher<dynamic> {
 
         private HashSet<State<dynamic>> closedHashSet;
 
-        public BestFirstSearch() {
+        public AStarSearch() {
             this.closedHashSet = new HashSet<State<dynamic>>();
         }
 
@@ -17,7 +16,7 @@ namespace WpfApp.Model.Solver.SearchAlgorithm {
             List<State<dynamic>> list = null;
 
             State<dynamic> initState = searchable.getInitialState();
-            Queue.Enqueue(initState);
+            Queue.Enqueue(initState, initState.Priority);
 
             State<dynamic> currentState;
             while (Queue.Count > 0) {
@@ -32,9 +31,9 @@ namespace WpfApp.Model.Solver.SearchAlgorithm {
                     List<State<dynamic>> successors = searchable.getAllPossibleStates(currentState);
 
                     foreach (State<dynamic> s in successors) {
-                        if (!closedHashSet.Contains(s)) {
+                        if (!closedHashSet.Contains(s) && !Queue.Contains(s)) {
                             s.CameFrom = currentState;
-                            Queue.Enqueue(s);
+                            Queue.Enqueue(s, s.Priority);
                         }
                     }
                 }

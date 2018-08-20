@@ -1,16 +1,17 @@
 ﻿using WpfApp.Model.Solver.Searchable;
 using WpfApp.Model.Solver.Misc;
-using System.Collections.Generic;
+using Priority_Queue;
 
 namespace WpfApp.Model.Solver.Searchers {
     public abstract class Searcher<dynamic> : ISearcher {
 
-        private Queue<State<dynamic>> queue;
+        private FastPriorityQueue<State<dynamic>> queue;
         private int evaluatedNodes;
+        public static int MAX_SIZE = 1000000;
 
         public Searcher() {
-            // TODO: Priority Queue?
-            this.queue = new Queue<State<dynamic>>();
+            // TODO: Priority Queue max capacity?
+            this.queue = new FastPriorityQueue<State<dynamic>>(MAX_SIZE);
             this.evaluatedNodes = 0;
         }
 
@@ -19,7 +20,7 @@ namespace WpfApp.Model.Solver.Searchers {
             return queue.Dequeue();
         }
 
-        public Queue<State<dynamic>> Queue {
+        public FastPriorityQueue<State<dynamic>> Queue {
             get {
                 return queue;
             }
