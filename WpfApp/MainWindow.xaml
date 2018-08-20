@@ -1,0 +1,56 @@
+﻿<Window x:Class="WpfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:b="clr-namespace:WpfApp.Behaviors"
+        
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Controls="clr-namespace:WpfApp.Controls"
+        xmlns:local="clr-namespace:WpfApp"
+
+        mc:Ignorable="d"
+        Title="Tile Puzzle!" Height="400" Width="400" Icon="./Resources/GameIcon.ico">
+    
+    <DockPanel Background="WhiteSmoke">
+        <StackPanel DockPanel.Dock="Top" Height="50" Orientation="Horizontal" 
+                    HorizontalAlignment="Center" Opacity="1">
+            <StackPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Margin" Value="10"></Setter>
+                </Style>
+            </StackPanel.Resources>
+
+            <Button Click="Generate_Button_Click">
+                Generate new puzzle
+            </Button>
+
+            <Button Click="Settings_Button_Click">
+                Settings
+            </Button>
+
+            <Button Click="Solve_Button_Click">
+                Solve
+            </Button>
+
+        </StackPanel>
+
+
+        <Grid DockPanel.Dock="Bottom">
+            
+            <ProgressBar Name="progressBar" Value="{Binding VM_Progress, Mode=OneWay}">
+                <i:Interaction.Behaviors>
+                    <b:ProgresBarAnimateBehavior/>
+                </i:Interaction.Behaviors>
+            </ProgressBar>
+
+            <TextBlock Name="progressTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Text="Progress">
+            </TextBlock>
+
+        </Grid>
+
+        <Controls:TilePuzzleUserControl DockPanel.Dock="Right" x:Name="puzzle"/>
+
+    </DockPanel>
+</Window>
