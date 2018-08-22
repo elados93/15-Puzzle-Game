@@ -9,12 +9,22 @@ namespace WpfApp.Model.Solver {
 
         public Solution(List<State<dynamic>> list, int steps) {
             this.pathOfSolution = list;
-            this.numberOfSteps = steps;
+            this.NumberOfSteps = steps;
         }
 
         public List<State<dynamic>> PathOfSolution {
             get {
                 return pathOfSolution;
+            }
+        }
+
+        public int NumberOfSteps {
+            get {
+                return numberOfSteps;
+            }
+
+            set {
+                this.numberOfSteps = value;
             }
         }
     }

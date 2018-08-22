@@ -7,11 +7,11 @@ namespace WpfApp.Model.Solver.Searchers {
 
         private FastPriorityQueue<State<dynamic>> queue;
         private int evaluatedNodes;
-        public static int MAX_SIZE = 1000000;
+        private int MAX_VALUE = 100000000;
 
         public Searcher() {
             // TODO: Priority Queue max capacity?
-            this.queue = new FastPriorityQueue<State<dynamic>>(MAX_SIZE);
+            this.queue = new FastPriorityQueue<State<dynamic>>(MAX_VALUE);
             this.evaluatedNodes = 0;
         }
 

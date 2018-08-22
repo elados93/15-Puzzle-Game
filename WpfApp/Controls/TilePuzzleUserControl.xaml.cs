@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -7,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using WpfApp.Misc;
 using WpfApp.Model;
+using WpfApp.Model.Solver;
 using WpfApp.ViewModel;
 
 namespace WpfApp.Controls {
@@ -132,8 +134,13 @@ namespace WpfApp.Controls {
             }
         }
 
-        public void solve() {
-            this.vm.solve();
+        public async void solve() {
+            
+            Task solver = new Task(() => {
+                this.vm.solve();
+            });
+            solver.Start();
+            await solver;
         }
 
     }

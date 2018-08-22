@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using WpfApp.Misc;
 using WpfApp.Model.Solver.Misc;
 using WpfApp.Model.Solver.Searchable;
 using WpfApp.Model.Solver.Searchers;
@@ -25,32 +27,43 @@ namespace WpfApp.Model.Solver.SearchAlgorithm {
 
                 if (searchable.isGoalState(currentState)) {
                     list = backtrace(currentState);
-                    break;
-                } else {
-                    /* List of all successors of the current state*/
-                    List<State<dynamic>> successors = searchable.getAllPossibleStates(currentState);
+                    return new Solution(list, list.Count);
+                }
 
-                    foreach (State<dynamic> s in successors) {
-                        if (!closedHashSet.Contains(s) && !Queue.Contains(s)) {
-                            s.CameFrom = currentState;
-                            Queue.Enqueue(s, s.Priority);
+                /* List of all successors of the current state*/
+                List<Tuple<State<dynamic>, Direction>> successors = searchable.getAllPossibleStates(currentState);
+
+                foreach (Tuple<State<dynamic>, Direction> tuple in successors) {
+                    State<dynamic> neighbor = tuple.Item1;
+                    if (!closedHashSet.Contains(neighbor) && !Queue.Contains(neighbor)) {
+
+                        Queue.Enqueue(neighbor, neighbor.Priority);
+
+                    } else {
+                        if (neighbor.Priority > currentState.Cost + 1 + neighbor.Heuristic) {
+                            neighbor.CameFrom = currentState;
+                            neighbor.Direction = tuple.Item2;
+                            neighbor.Cost = currentState.Cost + 1;
+                            neighbor.updatePriority();
+
+                            if (!Queue.Contains(neighbor))
+                                Queue.Enqueue(neighbor, neighbor.Priority);
                         }
                     }
-                }
+                } // end successors for loop
             } // end while loop
-            
-            return new Solution(list, this.getNumberOfNodesEvaluated());
+
+            throw new System.Exception("Cannot be solved with A* algorithm!");
         }
 
         private List<State<dynamic>> backtrace(State<dynamic> goalState) {
             List<State<dynamic>> list = new List<State<dynamic>>();
 
             State<dynamic> runnerState = goalState;
-            while (runnerState != null) {
+            while (!runnerState.IsInit) {
                 list.Insert(0, runnerState);
                 runnerState = runnerState.CameFrom;
             }
-            list.RemoveAt(0); // the first is the init state, doesn't really need it.
             return list;
         }
 

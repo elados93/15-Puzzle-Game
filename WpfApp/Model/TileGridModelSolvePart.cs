@@ -20,10 +20,22 @@ namespace WpfApp.Model {
         #endregion
 
         #region Solve Functions
-        internal void solve() {
+        internal Solution solve() {
+            GC.Collect(); // TODO: consider using or not
+
             ISearcher searcher = new AStarSearch();
             Solution solution = searcher.search(this);
-            solveBySolution(solution);
+            State<dynamic>.StatePool.Clear();
+            return solution;
+        }
+
+        internal void solveBySolution(Solution solution) {
+            List<State<dynamic>> list = solution.PathOfSolution;
+
+            foreach (State<dynamic> state in list) {
+                applyState(state);
+                Thread.Sleep(250); // as a delay between swaps
+            }
             this.tracker.updateSolved();
         }
 
@@ -37,53 +49,87 @@ namespace WpfApp.Model {
                         sb.Append(";");
                 }
             }
-            string s = sb.ToString();
-            return new State<dynamic>(s, Direction.NO_DIRECTION, calcHeuristic(s), 0);
+            string initStateString = sb.ToString();
+            State<dynamic> initState = State<dynamic>.StatePool.GetState(initStateString);
+            initState.IsInit = true;
+            initState.Heuristic = calcHeuristic(initStateString);
+            initState.Cost = 0;
+            initState.Direction = Direction.NO_DIRECTION;
+            initState.updatePriority();
+            return initState;
         }
 
         public bool isGoalState(State<dynamic> state) {
             string goalState = goalCalaulated ? goalString : createGoalTile();
             string givenState = state.StateProperty;
 
-            /* O(1) Comparison using interns */
-            return (object)string.Intern(goalState) == (object)string.Intern(givenState);
+            return goalState.Equals(givenState);
         }
 
-        public List<State<dynamic>> getAllPossibleStates(State<dynamic> state) {
-            List<State<dynamic>> list = new List<State<dynamic>>();
+        public List<Tuple<State<dynamic>, Direction>> getAllPossibleStates(State<dynamic> state) {
+            var list = new List<Tuple<State<dynamic>, Direction>>();
 
             string stateString = state.StateProperty;
             string[] stringArr = stateString.Split(';');
             int stateStringLength = stringArr.Length;
             int spaceIndex = Array.FindIndex(stringArr, s => s.Equals(" "));
-            float newStatecost = state.Cost + 1;
+            int newCost = state.Cost + 1;
+            int oldStateHeuristic = state.Heuristic;
 
             /* RIGHT MOVE */
             if (spaceIndex + 1 < stateStringLength && (spaceIndex + 1 + col) % col != 0) {
                 string rightMove = swapIndexesInString(stringArr, spaceIndex, spaceIndex + 1);
-                list.Add(new State<dynamic>(rightMove, Direction.RIGHT,
-                    calcHeuristic(rightMove), newStatecost));
+                State<dynamic> rightState = State<dynamic>.StatePool.GetState(rightMove);
+                // if the state is new calc the heuristic smartly
+                if (rightState.CameFrom == null) {
+                    rightState.Direction = Direction.RIGHT;
+                    rightState.Cost = newCost;
+                    rightState.Heuristic = calcHeuristicByMove(oldStateHeuristic, stringArr, spaceIndex, spaceIndex + 1);
+                    rightState.updatePriority();
+                    rightState.CameFrom = state;
+                }
+                list.Add(new Tuple<State<dynamic>, Direction>(rightState, Direction.RIGHT));
             }
             /* LEFT MOVE */
             if ((spaceIndex - 1 == 0) || (spaceIndex - 1 >= 0 && (spaceIndex + col) % col != 0)) {
                 string leftMove = swapIndexesInString(stringArr, spaceIndex, spaceIndex - 1);
-                list.Add(new State<dynamic>(leftMove, Direction.LEFT,
-                    calcHeuristic(leftMove), newStatecost));
+                State<dynamic> leftState = State<dynamic>.StatePool.GetState(leftMove);
+                if (leftState.CameFrom == null) {
+                    leftState.Direction = Direction.LEFT;
+                    leftState.Cost = newCost;
+                    leftState.Heuristic = calcHeuristicByMove(oldStateHeuristic, stringArr, spaceIndex, spaceIndex - 1);
+                    leftState.updatePriority();
+                    leftState.CameFrom = state;
+                }
+                list.Add(new Tuple<State<dynamic>, Direction>(leftState, Direction.LEFT));
             }
             /* UP MOVE */
             if (spaceIndex - col >= 0) {
                 string upMove = swapIndexesInString(stringArr, spaceIndex, spaceIndex - col);
-                list.Add(new State<dynamic>(upMove, Direction.UP,
-                    calcHeuristic(upMove), newStatecost));
+                State<dynamic> upState = State<dynamic>.StatePool.GetState(upMove);
+                if (upState.CameFrom == null) {
+                    upState.Direction = Direction.UP;
+                    upState.Cost = newCost;
+                    upState.Heuristic = calcHeuristicByMove(oldStateHeuristic, stringArr, spaceIndex, spaceIndex - col);
+                    upState.updatePriority();
+                    upState.CameFrom = state;
+                }
+                list.Add(new Tuple<State<dynamic>, Direction>(upState, Direction.UP));
             }
             /* DOWN MOVE */
             if (spaceIndex + col < stateStringLength) {
                 string downMove = swapIndexesInString(stringArr, spaceIndex, spaceIndex + col);
-                list.Add(new State<dynamic>(downMove, Direction.DOWN,
-                    calcHeuristic(downMove), newStatecost));
+                State<dynamic> downState = State<dynamic>.StatePool.GetState(downMove);
+                if (downState.CameFrom == null) {
+                    downState.Direction = Direction.DOWN;
+                    downState.Cost = newCost;
+                    downState.Heuristic = calcHeuristicByMove(oldStateHeuristic, stringArr, spaceIndex, spaceIndex + col);
+                    downState.updatePriority();
+                    downState.CameFrom = state;
+                }
+                list.Add(new Tuple<State<dynamic>, Direction>(downState, Direction.DOWN));
             }
 
-            list.Sort((x, y) => r.Next());
             return list;
         }
 
@@ -104,15 +150,6 @@ namespace WpfApp.Model {
             goalCalaulated = true;
             goalString = sb.ToString();
             return goalString;
-        }
-
-        private void solveBySolution(Solution solution) {
-            List<State<dynamic>> list = solution.PathOfSolution;
-
-            foreach (State<dynamic> state in list) {
-                applyState(state);
-                Thread.Sleep(250); // as a delay between swaps
-            }
         }
 
         private void applyState(State<dynamic> state) {
@@ -143,26 +180,35 @@ namespace WpfApp.Model {
             }
         }
 
-        private string swapIndexesInString(string[] stateString, int i, int j) {
-            StringBuilder sb = new StringBuilder();
-            int length = stateString.Length;
+        private string swapIndexesInString(string[] stringArr, int i, int j) {
 
-            for (int k = 0; k < length; k++) {
-                if (k == i)
-                    sb.Append(stateString[j]);
-                else if (k == j)
-                    sb.Append(stateString[i]);
-                else
-                    sb.Append(stateString[k]);
-                if (k != length - 1)
-                    sb.Append(";");
-            }
+            stringArr[i] = stringArr[j];
+            stringArr[j] = " ";
+            string rightMove = string.Join(";", stringArr);
 
-            return sb.ToString();
+            stringArr[j] = stringArr[i];
+            stringArr[i] = " ";
+
+            return rightMove;
+            //StringBuilder sb = new StringBuilder();
+            //int length = stateString.Length;
+
+            //for (int k = 0; k < length; k++) {
+            //    if (k == i)
+            //        sb.Append(stateString[j]);
+            //    else if (k == j)
+            //        sb.Append(stateString[i]);
+            //    else
+            //        sb.Append(stateString[k]);
+            //    if (k != length - 1)
+            //        sb.Append(";");
+            //}
+
+            //return sb.ToString();
         }
 
-        private float calcHeuristic(string stateString) {
-            float sum = 0;
+        public int calcHeuristic(string stateString) {
+            int sum = 0;
             string[] stringArr = stateString.Split(';');
             int index = 0;
 
@@ -188,7 +234,41 @@ namespace WpfApp.Model {
             return sum;
         }
 
-        private float calcDifference(int i, int j, int correctX, int correctY) {
+        private int calcHeuristicByMove(int heuristic, string[] stateString, int spaceIndex, int newSpaceIndex) {
+            string valueToSwapWithSpace = stateString[newSpaceIndex];
+
+            int xPosBefore = spaceIndex / col;
+            int yPosBefore = (spaceIndex + col) % col;
+
+            int xPosAfter = newSpaceIndex / col;
+            int yPosAfter = (newSpaceIndex + col) % col;
+
+            int heuristicBeforeMove = calcHeuristicByPlace(" ", xPosBefore, yPosBefore) +
+                calcHeuristicByPlace(valueToSwapWithSpace, xPosAfter, yPosAfter);
+
+            int heuristicAfterMove = calcHeuristicByPlace(" ", xPosAfter, yPosAfter) +
+                calcHeuristicByPlace(valueToSwapWithSpace, xPosBefore, yPosBefore);
+
+            return heuristic - heuristicBeforeMove + heuristicAfterMove;
+        }
+
+        private int calcHeuristicByPlace(string value, int i, int j) {
+            int correctY, correctX;
+
+            if (!value.Equals(" ")) {
+                int integerValue = int.Parse(value);
+
+                correctX = (integerValue - 1) / col;
+                correctY = (integerValue - 1) % col;
+            } else {
+                correctX = row - 1;
+                correctY = col - 1;
+            }
+
+            return calcDifference(i, j, correctX, correctY);
+        }
+
+        private int calcDifference(int i, int j, int correctX, int correctY) {
             return Math.Abs(i - correctX) + Math.Abs(j - correctY);
         }
         #endregion

@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using WpfApp.Misc;
 using WpfApp.Model;
+using WpfApp.Model.Solver;
 
 namespace WpfApp.ViewModel {
     class TilePuzzleViewModel : INotifyPropertyChanged {
@@ -132,10 +133,10 @@ namespace WpfApp.ViewModel {
         }
         #endregion
 
-        internal async void solve() {
-            Task solveTask = new Task(() => this.model.solve());
-            solveTask.Start();
-            await solveTask;
+        internal void solve() {
+            Solution s = this.model.solve();
+            MessageBox.Show("Solved with: " + s.NumberOfSteps + " steps!");
+            this.model.solveBySolution(s);
         }
 
     }
