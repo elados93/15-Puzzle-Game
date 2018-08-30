@@ -1,7 +1,10 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Media;
 using WpfApp.Misc;
+using WpfApp.Model.Solver.Misc;
 using WpfApp.Model.Solver.Searchable;
 using WpfApp.Model.TileGenerator;
 
@@ -125,6 +128,20 @@ namespace WpfApp.Model {
             };
             this.tracker.getFirstProgress();
             this.goalCalaulated = false;
+
+            Dictionary<string[], State<dynamic>> dic = new Dictionary<string[], State<dynamic>>();
+
+            // TODO: Deleteee
+            //string[] key = { "1", "2", "3", " " };
+            //State<dynamic> value = new State<dynamic>(key);
+            //State<dynamic> value2 = new State<dynamic>(key);
+
+            //dic.Add(key, value);
+
+            //bool s = dic.ContainsKey(key);
+            //s = dic.ContainsValue(value);
+            //s = dic.ContainsValue(value2);
+
         }
 
         public void clicked(int i, int j) {

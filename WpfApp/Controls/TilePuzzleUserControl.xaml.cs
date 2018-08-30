@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -8,7 +7,6 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using WpfApp.Misc;
 using WpfApp.Model;
-using WpfApp.Model.Solver;
 using WpfApp.ViewModel;
 
 namespace WpfApp.Controls {
@@ -28,7 +26,7 @@ namespace WpfApp.Controls {
 
         private void wrongTileAnimation(int i, int j) {
             foreach (UIElement label in BaseGrid.Children) {
-                if(Grid.GetRow(label) == i && Grid.GetColumn(label) == j) {
+                if (Grid.GetRow(label) == i && Grid.GetColumn(label) == j) {
                     Label wrongLabel = label as Label;
 
                     SolidColorBrush color;
@@ -134,13 +132,12 @@ namespace WpfApp.Controls {
             }
         }
 
-        public async void solve() {
-            
-            Task solver = new Task(() => {
-                this.vm.solve();
-            });
-            solver.Start();
-            await solver;
+        public void solve() {
+            this.vm.solve();
+        }
+
+        public void solveBySolution() {
+            this.vm.solveByLastSolution();
         }
 
     }

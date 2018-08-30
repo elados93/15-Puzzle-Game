@@ -14,6 +14,7 @@ namespace WpfApp.ViewModel {
     class TilePuzzleViewModel : INotifyPropertyChanged {
 
         private TileGridModel model;
+        private Solution lastSolution;
 
         #region events
         public event PropertyChangedEventHandler PropertyChanged;
@@ -134,10 +135,18 @@ namespace WpfApp.ViewModel {
         #endregion
 
         internal void solve() {
-            Solution s = this.model.solve();
-            MessageBox.Show("Solved with: " + s.NumberOfSteps + " steps!");
-            this.model.solveBySolution(s);
+            lastSolution = this.model.solve();
+            int steps = lastSolution.NumberOfSteps;
+            if (steps > 1)
+                MessageBox.Show("Solved with: " + lastSolution.NumberOfSteps + " steps!");
+            else if (steps == 1)
+                MessageBox.Show("Solved with one step!");
+            else
+                MessageBox.Show("Already solved! nice try..");
         }
 
+        internal void solveByLastSolution() {
+            this.model.solveBySolution(this.lastSolution);
+        }
     }
 }

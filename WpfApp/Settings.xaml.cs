@@ -9,8 +9,6 @@ namespace WpfApp {
     public partial class Settings : Window {
         public Settings() {
             InitializeComponent();
-            ResizeMode = ResizeMode.NoResize;
-
             setValuesFromAppConfig();
         }
 

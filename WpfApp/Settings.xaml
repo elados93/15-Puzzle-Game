@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp"
         mc:Ignorable="d"
-        Title="Settings" Height="180" Width="220">
+        Title="Settings" Height="180" Width="220" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Icon="Resources/SettingsIcon.ico">
     <Grid>
         <Grid.Resources>
             <Style TargetType="TextBlock">

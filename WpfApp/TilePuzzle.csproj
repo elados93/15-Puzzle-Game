@@ -67,7 +67,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Behaviors\ProgressBarTextBehavior.cs" />
     <Compile Include="Misc\Level.cs" />
     <Compile Include="Misc\PuzzleArgs.cs" />
     <Compile Include="Model\PuzzleProgressTracker.cs" />
@@ -90,6 +89,9 @@
     <Compile Include="SettingsForm\SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SettingsForm\SolvingWindow.xaml.cs">
+      <DependentUpon>SolvingWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModel\TilePuzzleViewModel.cs" />
     <Page Include="Controls\TilePuzzleUserControl.xaml">
       <SubType>Designer</SubType>
@@ -111,6 +113,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Settings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingsForm\SolvingWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

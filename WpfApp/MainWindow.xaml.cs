@@ -1,11 +1,10 @@
-﻿using System;
-using System.ComponentModel;
-using System.Configuration;
+﻿using System.Configuration;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 using WpfApp.Misc;
+using WpfApp.SettingsForm;
 
 namespace WpfApp {
     /// <summary>
@@ -28,12 +27,24 @@ namespace WpfApp {
             puzzle.createGrid(args);
         }
 
-        private void Solve_Button_Click(object sender, RoutedEventArgs e) {
-            puzzle.solve();
+        private async void Solve_Button_Click(object sender, RoutedEventArgs e) {
+            BlurEffect blurEffect = new BlurEffect();
+           
+            this.Effect = blurEffect;
+            using (SolvingWindow solvingWindow = new SolvingWindow(puzzle.solve)) {
+                solvingWindow.Owner = this;
+                solvingWindow.ShowDialog();
+            }
+
+            this.Effect = null;
+            Task solveTask = new Task(() => puzzle.solveBySolution());
+            solveTask.Start();
+            await solveTask;
         }
 
         private void Settings_Button_Click(object sender, RoutedEventArgs e) {
             Settings settingsWindow = new Settings();
+            settingsWindow.Owner = this;
             settingsWindow.ShowDialog();
         }
 

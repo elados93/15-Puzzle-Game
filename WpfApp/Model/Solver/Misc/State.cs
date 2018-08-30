@@ -6,7 +6,8 @@ using System.Collections.Generic;
 namespace WpfApp.Model.Solver.Misc {
     public class State<T> : FastPriorityQueueNode, IEquatable<State<T>> {
 
-        private static Dictionary<int, State<T>> statePool = new Dictionary<int, State<T>>();
+        private static Dictionary<T, State<T>> statePool = new Dictionary<T, State<T>>();
+        //private static Hashtable statePool = new Hashtable();
 
         public State(T state) {
             this.StateProperty = state;
@@ -18,15 +19,15 @@ namespace WpfApp.Model.Solver.Misc {
             //if (state is string)
             //    return (object)string.Intern(this.state.ToString()) == 
             //        (object)string.Intern(other.state.ToString());
+
+            if(StateProperty is string[]) {
+                return Array.Equals(other.StateProperty, StateProperty);
+            }
             return this.StateProperty.Equals(other.StateProperty);
         }
 
         public override int GetHashCode() {
             return this.StateProperty.GetHashCode();
-        }
-
-        public void updatePriority() {
-            this.Priority = Heuristic + Cost;
         }
 
         #region Properties
@@ -47,14 +48,17 @@ namespace WpfApp.Model.Solver.Misc {
 
             public static State<T> GetState(T state) {
 
-                int code = state.ToString().GetHashCode();
+                //int code = state.GetHashCode();
 
-                if (statePool.ContainsKey(code))
-                    return statePool[code];
-                else {
-                    State<T> newState = new State<T>(state);
-                    statePool.Add(code, newState);
-                    return newState;
+                if (statePool.ContainsKey(state)) {
+                    State<T> fromTable = statePool[state];
+                    int code2 = fromTable.Priority.GetHashCode();
+                    return fromTable;
+                } else {
+                    State<T> temp = new State<T>(state);
+
+                    statePool.Add(state, temp);
+                    return temp;
                 }
             }
 
