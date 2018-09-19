@@ -21,32 +21,6 @@ namespace WpfApp.Controls {
             InitializeComponent();
             vm = new TilePuzzleViewModel();
             this.DataContext = this.vm;
-            this.vm.WrongTileClicked += wrongTileAnimation;
-        }
-
-        private void wrongTileAnimation(int i, int j) {
-            foreach (UIElement label in BaseGrid.Children) {
-                if (Grid.GetRow(label) == i && Grid.GetColumn(label) == j) {
-                    Label wrongLabel = label as Label;
-
-                    SolidColorBrush color;
-                    if (isLabelEmpty(wrongLabel))
-                        wrongLabel.Background = color = new SolidColorBrush(Colors.Gray);
-                    else
-                        wrongLabel.Background = color = new SolidColorBrush(Colors.White);
-
-                    ColorAnimation ca = new ColorAnimation(Colors.Red, new Duration(TimeSpan.FromSeconds(0.2)));
-                    ca.EasingFunction = new QuadraticEase();
-                    ca.AutoReverse = true;
-                    wrongLabel.Background.BeginAnimation(SolidColorBrush.ColorProperty, ca);
-                }
-            }
-        }
-
-        private bool isLabelEmpty(Label l) {
-            Viewbox vb = l.Content as Viewbox;
-            TextBlock tb = vb.Child as TextBlock;
-            return tb.Text.Equals(" ");
         }
 
         public void createGrid(PuzzleArgs args) {

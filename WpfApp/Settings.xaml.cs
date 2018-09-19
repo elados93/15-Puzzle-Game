@@ -27,20 +27,31 @@ namespace WpfApp {
             string cols = colTextBox.Text.ToString();
             string level = difficulty.Text.ToString();
 
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings.Remove("Rows");
-            config.AppSettings.Settings.Add("Rows", rows);
+            if (isDimValid(rows) && isDimValid(cols)) {
 
-            config.AppSettings.Settings.Remove("Cols");
-            config.AppSettings.Settings.Add("Cols", cols);
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                config.AppSettings.Settings.Remove("Rows");
+                config.AppSettings.Settings.Add("Rows", rows);
 
-            config.AppSettings.Settings.Remove("Level");
-            config.AppSettings.Settings.Add("Level", level);
+                config.AppSettings.Settings.Remove("Cols");
+                config.AppSettings.Settings.Add("Cols", cols);
 
-            config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
+                config.AppSettings.Settings.Remove("Level");
+                config.AppSettings.Settings.Add("Level", level);
 
-            this.Close();
+                config.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection("appSettings");
+
+                this.Close();
+            } else {
+                MessageBox.Show("Dim has to be an integer greater than 1!");
+            }
+        }
+
+        private bool isDimValid(string dim) {
+            int num;
+            bool isInteger = int.TryParse(dim, out num);
+            return isInteger && num >= 2;
         }
     }
 }

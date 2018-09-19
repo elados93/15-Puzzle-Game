@@ -15,10 +15,10 @@ namespace WpfApp.ViewModel {
 
         private TileGridModel model;
         private Solution lastSolution;
+        private Label lastLabelClicked;
 
         #region events
         public event PropertyChangedEventHandler PropertyChanged;
-        public event TilePositionDelegate WrongTileClicked;
         #endregion
 
         public TilePuzzleViewModel() {
@@ -27,9 +27,7 @@ namespace WpfApp.ViewModel {
             this.model.PropertyChanged += delegate (object sender, PropertyChangedEventArgs e) {
                 NotifyPropertyChanged("VM_" + e.PropertyName);
             };
-            this.model.WrongTileClicked += delegate (int i, int j) {
-                WrongTileClicked?.Invoke(i, j);
-            };
+            this.model.WrongTileClicked += wrongTileAnimation;
 
             this.model.BorderBrush = Brushes.Black;
             this.model.BorderThickness = new Thickness(2);
@@ -51,12 +49,31 @@ namespace WpfApp.ViewModel {
         }
 
         public void clickOnTile(object sender, MouseButtonEventArgs e) {
-            Label l = sender as Label;
+            lastLabelClicked = sender as Label;
 
-            int rowTile = Grid.GetRow(l);
-            int colTile = Grid.GetColumn(l);
-
+            int rowTile = Grid.GetRow(lastLabelClicked);
+            int colTile = Grid.GetColumn(lastLabelClicked);
             this.model.clicked(rowTile, colTile);
+        }
+
+        private void wrongTileAnimation(int i, int j) {
+
+            SolidColorBrush color;
+            if (isLabelEmpty(lastLabelClicked))
+                lastLabelClicked.Background = color = new SolidColorBrush(Colors.Gray);
+            else
+                lastLabelClicked.Background = color = new SolidColorBrush(Colors.White);
+
+            ColorAnimation ca = new ColorAnimation(Colors.Red, new Duration(TimeSpan.FromSeconds(0.2)));
+            ca.EasingFunction = new QuadraticEase();
+            ca.AutoReverse = true;
+            lastLabelClicked.Background.BeginAnimation(SolidColorBrush.ColorProperty, ca);
+        }
+
+        private bool isLabelEmpty(Label l) {
+            Viewbox vb = l.Content as Viewbox;
+            TextBlock tb = vb.Child as TextBlock;
+            return tb.Text.Equals(" ");
         }
 
         #region Properies
@@ -142,7 +159,7 @@ namespace WpfApp.ViewModel {
             else if (steps == 1)
                 MessageBox.Show("Solved with one step!");
             else
-                MessageBox.Show("Already solved! nice try..");
+                MessageBox.Show("Already solved! Nice try..");
         }
 
         internal void solveByLastSolution() {

@@ -8,7 +8,5 @@ namespace WpfApp.Model.Solver.Searchable {
         State<dynamic> getInitialState();
         bool isGoalState(State<dynamic> state);
         List<Tuple<State<dynamic>, Direction>> getAllPossibleStates(State<dynamic> s);
-
-        int calcHeuristic(string[] stateString);
     }
 }
